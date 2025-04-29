@@ -12,6 +12,7 @@ function FilesTable() {
     const fetchAddressList = async () => {
     
         const response = await service.getFiles();
+        console.log(response);
         setFiles(response);
     };
 
@@ -28,24 +29,14 @@ function FilesTable() {
       <table class="blueTable">
         <thead>
           <tr>
-            <th>Service</th>
-            <th>
-              Category
-            </th>
-            <th>
-              Service
-            </th>
-            <th>
-              SQLInstanceName
-            </th>
-            <th>
-              Date
-            </th>
+            <th>Name</th>
+           
           </tr>
         </thead>
         <tbody>
+            <tr><td>example</td></tr>
           {files && files.map((file, index) => (
-           <tr><td>{file.name}</td></tr>
+           <tr><td>https://filesharinggs.blob.core.windows.net/filecontainergs/{file}</td></tr>
           ))}
         </tbody>
       </table>
