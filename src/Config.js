@@ -5,7 +5,7 @@ const dev = {
 
 
 const prod = {
-    serverUrl : 'http://localhost:5084'
+    serverUrl : 'http://kameralne.productivitytools.top:8004'
 }
 
 export const config = process.env.NODE_ENV === 'development' ? dev : prod;
