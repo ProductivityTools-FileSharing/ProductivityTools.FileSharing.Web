@@ -5,7 +5,9 @@ import { config } from '../Config';
 
 
 async function getFiles() {
+    console.log("env", process.env.NODE_ENV)
     let filesUrl=`${config.serverUrl}/File`
+    console.log("filesurl", filesUrl)
     const response = await axios.get(filesUrl)
     return response.data;
 }
