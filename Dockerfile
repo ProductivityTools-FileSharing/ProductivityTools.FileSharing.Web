@@ -1,6 +1,7 @@
 # Build Stage
 FROM node:22-alpine AS build
-ENV NODE_ENV="prod"
+ENV GOOGLE_NODE_RUN_SCRIPTS: ''
+ENV NODE_ENV: 'production'
 WORKDIR /app
 COPY package*.json ./
 RUN npm install

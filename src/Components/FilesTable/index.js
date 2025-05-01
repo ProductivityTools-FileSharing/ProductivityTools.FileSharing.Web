@@ -26,7 +26,7 @@ function FilesTable() {
     <div className="address-table-container"> {/* Optional wrapper */}
       <h2>Service Status Dashboard</h2>
 
-      <table class="blueTable">
+      <table className="blueTable">
         <thead>
           <tr>
             <th>Name</th>
