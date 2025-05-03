@@ -15,6 +15,7 @@ async function getFiles() {
 async function uploadFile(formData){
     const res=await axios.post(`${config.serverUrl}/File`,formData);
     console.log(res);
+    return res;
 
 }
 
