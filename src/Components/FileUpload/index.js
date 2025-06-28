@@ -1,42 +1,65 @@
 import axios from "axios";
-import { useState } from "react"
-import service from '../../Services/api'
-
+import { useEffect, useState } from "react";
+import service from "../../Services/api";
 
 function FileUpload() {
+  const [file, setFile] = useState();
+  const [fileName, setFileName] = useState();
+  const [uploadInProgress, setUploadInProgress] = useState(false);
+  const [uploadResponse, setUploadResponse] = useState();
+  const [uploadResponseText, setUploadResponseText] = useState("");
+  const [fileInputWorkaroundKey, setFileInputWorkaroundKey] = useState( Date.now());
 
-    const [file, setFile] = useState();
-    const [fileName, setFileName] = useState();
-    const [uploadInProgress, setUploadInProgress] = useState(false);
-    const [uploadResponse, setUploadResponse] = useState('');
-
-
-    const saveFile = (e) => {
-        setFile(e.target.files[0]);
-        setFileName(e.target.files[0].name);
-    }
-
-    const uploadFile = async (e) => {
-        setUploadInProgress(true);
-        setUploadResponse('');
-        const formData = new FormData();
-        formData.append("formFile", file);
-        formData.append("fileName", fileName);
-        const response = await service.uploadFile(formData);
+  useEffect(() => {
+    if (uploadResponse) {
+      if (uploadResponse.status == 200) {
+        setUploadResponseText("Dodano plik");
+        setFile(null);
+        setFileName(null);
+        setUploadResponse("");
         setUploadInProgress(false);
-        console.log("response",response);
-        setUploadResponse(response.data);
-    }
+        setFileInputWorkaroundKey( Date.now());
 
-    return (
-        <>
-        <span>x</span>
-             <input type="file" onChange={saveFile} />
-            <button onClick={uploadFile}>Upload File</button><br/>
-            <span>Upload in progress: {uploadInProgress ? 'true' : 'false'}</span><br/>
-            <span>Upload respone: {uploadResponse}</span>
-        </>
-    )
+      } else {
+        setUploadResponseText("Coś się stało", uploadResponse.statusText);
+      }
+    }
+  }, [uploadResponse]);
+
+  const saveFile = (e) => {
+    setFile(e.target.files[0]);
+    setFileName(e.target.files[0].name);
+  };
+
+
+  const uploadFile = async (e) => {
+    setUploadInProgress(true);
+    setUploadResponse("");
+    const formData = new FormData();
+    formData.append("formFile", file);
+    formData.append("fileName", fileName);
+    const response = await service.uploadFile(formData);
+    console.log("response", response);
+    setUploadResponse(response);
+  };
+
+  return (
+    <>
+      <span></span>
+      <input type="file" onChange={saveFile} key={fileInputWorkaroundKey} />
+      <button disabled={!file} onClick={uploadFile}>
+        Upload File
+      </button>
+      <br />
+      <span>
+        Status:
+        {uploadInProgress ? "Dodaje plik - czekaj" : " Nic nie robię"}
+      </span>
+      <br />
+      <span>{uploadResponseText}</span>
+      <hr></hr>
+    </>
+  );
 }
 
 export default FileUpload;
