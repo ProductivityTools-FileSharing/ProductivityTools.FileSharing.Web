@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import service from "../../Services/api";
 import { config } from "../../Config";
 
-function FilesTable() {
+function FilesTable({ refreshTrigger, newlyAddedFile }) {
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
@@ -13,7 +13,7 @@ function FilesTable() {
     };
 
     fetchAddressList();
-  }, []);
+  }, [refreshTrigger]);
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(
@@ -41,7 +41,10 @@ function FilesTable() {
         <tbody>
           {files &&
             files.map((file) => (
-              <tr key={file}>
+              <tr
+                key={file}
+                style={file === newlyAddedFile ? { fontWeight: "bold" } : {}}
+              >
                 <td>{file}</td>
                 <td>{`${config.fileUrl}/${file}`}</td>
                 <td>

@@ -2,13 +2,15 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import service from "../../Services/api";
 
-function FileUpload() {
+function FileUpload({ onUploadSuccess }) {
   const [file, setFile] = useState();
   const [fileName, setFileName] = useState();
   const [uploadInProgress, setUploadInProgress] = useState(false);
   const [uploadResponse, setUploadResponse] = useState();
   const [uploadResponseText, setUploadResponseText] = useState("");
-  const [fileInputWorkaroundKey, setFileInputWorkaroundKey] = useState( Date.now());
+  const [fileInputWorkaroundKey, setFileInputWorkaroundKey] = useState(
+    Date.now()
+  );
 
   useEffect(() => {
     if (uploadResponse) {
@@ -18,19 +20,20 @@ function FileUpload() {
         setFileName(null);
         setUploadResponse("");
         setUploadInProgress(false);
-        setFileInputWorkaroundKey( Date.now());
-
+        setFileInputWorkaroundKey(Date.now());
+        if (onUploadSuccess) {
+          onUploadSuccess(fileName);
+        }
       } else {
         setUploadResponseText("Coś się stało", uploadResponse.statusText);
       }
     }
-  }, [uploadResponse]);
+  }, [uploadResponse, onUploadSuccess]);
 
   const saveFile = (e) => {
     setFile(e.target.files[0]);
     setFileName(e.target.files[0].name);
   };
-
 
   const uploadFile = async (e) => {
     setUploadInProgress(true);
@@ -51,10 +54,13 @@ function FileUpload() {
         Upload File
       </button>
       <br />
-      <span>
-        Status:
-        {uploadInProgress ? "Dodaje plik - czekaj" : " Nic nie robię"}
-      </span>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <span>
+          Status:
+          {uploadInProgress ? "Dodaje plik - czekaj" : " Nic nie robię"}
+        </span>
+        {uploadInProgress &&  <img src="turtle.gif" className="turtle" alt="turtle" width="60" />}
+      </div>
       <br />
       <span>{uploadResponseText}</span>
       <hr></hr>
