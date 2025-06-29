@@ -8,9 +8,22 @@ function FileUpload({ onUploadSuccess }) {
   const [uploadInProgress, setUploadInProgress] = useState(false);
   const [uploadResponse, setUploadResponse] = useState();
   const [uploadResponseText, setUploadResponseText] = useState("");
+  const [elapsedTime, setElapsedTime] = useState(0);
   const [fileInputWorkaroundKey, setFileInputWorkaroundKey] = useState(
     Date.now()
   );
+
+  useEffect(() => {
+    if (uploadInProgress) {
+      const timer = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+      }, 1000);
+      return () => {
+        clearInterval(timer);
+        setElapsedTime(0);
+      };
+    }
+  }, [uploadInProgress]);
 
   useEffect(() => {
     if (uploadResponse) {
@@ -26,6 +39,7 @@ function FileUpload({ onUploadSuccess }) {
         }
       } else {
         setUploadResponseText("Coś się stało", uploadResponse.statusText);
+        setUploadInProgress(false);
       }
     }
   }, [uploadResponse, onUploadSuccess]);
@@ -49,8 +63,13 @@ function FileUpload({ onUploadSuccess }) {
   return (
     <>
       <span></span>
-      <input type="file" onChange={saveFile} key={fileInputWorkaroundKey} />
-      <button disabled={!file} onClick={uploadFile}>
+      <input
+        type="file"
+        onChange={saveFile}
+        key={fileInputWorkaroundKey}
+        disabled={uploadInProgress}
+      />
+      <button disabled={!file || uploadInProgress} onClick={uploadFile}>
         Upload File
       </button>
       <br />
@@ -59,7 +78,8 @@ function FileUpload({ onUploadSuccess }) {
           Status:
           {uploadInProgress ? "Dodaje plik - czekaj" : " Nic nie robię"}
         </span>
-        {uploadInProgress &&  <img src="turtle.gif" className="turtle" alt="turtle" width="60" />}
+        {uploadInProgress && <img src="turtle.gif" className="turtle" alt="turtle" width="60" />}
+        {uploadInProgress && <span>{elapsedTime}s</span>}
       </div>
       <br />
       <span>{uploadResponseText}</span>
