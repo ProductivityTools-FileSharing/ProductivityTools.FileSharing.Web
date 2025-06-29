@@ -11,3 +11,26 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.file-url-link {
+  color: black;
+  text-decoration: none;
+}
+
+.file-url-link:hover {
+  text-decoration: underline;
+}
+
+.copy-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.copy-button img {
+  width: 30px;
+  height: 16px;
+}

@@ -5,6 +5,7 @@ import { config } from "../../Config";
 function FilesTable({ refreshTrigger, newlyAddedFile }) {
   const [files, setFiles] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: "created", direction: "descending" });
+  const [copiedUrl, setCopiedUrl] = useState(null);
 
   useEffect(() => {
     const fetchAddressList = async () => {
@@ -51,11 +52,12 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(
       () => {
-        // You can add a notification here for better user experience
-        console.log("Copied to clipboard:", text);
+        setCopiedUrl(text);
+        setTimeout(() => setCopiedUrl(null), 2000); // Reset after 2 seconds
       },
       (err) => {
         console.error("Failed to copy text: ", err);
+        alert("Failed to copy URL.");
       }
     );
   };
@@ -129,14 +131,23 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
                 style={file.name === newlyAddedFile ? { fontWeight: "bold" } : {}}
               >
                 <td>{file.name}</td>
-                <td>{`${config.fileUrl}/${file.name}`}</td>
+                <td>
+                  <a href={`${config.fileUrl}/${file.name}`} target="_blank" rel="noopener noreferrer" className="file-url-link">
+                    {`${config.fileUrl}/${file.name}`}
+                  </a>
+                  <button onClick={() => copyToClipboard(`${config.fileUrl}/${file.name}`)} className="copy-button" title="Copy to clipboard">
+                    <img src="copy.png" alt="Copy to clipboard" />
+                  </button>
+                  {copiedUrl === `${config.fileUrl}/${file.name}` && (
+                    <span style={{ marginLeft: "5px", color: "green", fontStyle: "italic" }}>
+                      Copied to clipboard!
+                    </span>
+                  )}
+                </td>
                 <td>{file.size} MB</td>
                 <td>{formatDate(file.created)}</td>
                 <td>
-                  <button onClick={() => copyToClipboard(`${config.fileUrl}/${file.name}`)}>
-                    Copy to clipboard
-                  </button>
-                  <button onClick={() => handleDelete(file.name)} style={{ marginLeft: "5px" }}>
+                  <button onClick={() => handleDelete(file.name)}>
                     Delete
                   </button>
                 </td>
