@@ -4,7 +4,10 @@ import { config } from "../../Config";
 
 function FilesTable({ refreshTrigger, newlyAddedFile }) {
   const [files, setFiles] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: "created", direction: "descending" });
+  const [sortConfig, setSortConfig] = useState({
+    key: "created",
+    direction: "descending",
+  });
   const [copiedUrl, setCopiedUrl] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState(new Set());
   const selectAllCheckboxRef = useRef(null);
@@ -19,7 +22,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
     fetchAddressList();
   }, [refreshTrigger]);
 
-   const sortedFiles = useMemo(() => {
+  const sortedFiles = useMemo(() => {
     let sortableItems = [...files];
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
@@ -50,15 +53,14 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
     }
     return sortableItems;
   }, [files, sortConfig]);
-  
+
   useEffect(() => {
     if (selectAllCheckboxRef.current) {
-      const isIndeterminate = selectedFiles.size > 0 && selectedFiles.size < sortedFiles.length;
+      const isIndeterminate =
+        selectedFiles.size > 0 && selectedFiles.size < sortedFiles.length;
       selectAllCheckboxRef.current.indeterminate = isIndeterminate;
     }
   }, [selectedFiles, sortedFiles.length]);
-
- 
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(
@@ -74,11 +76,15 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
   };
 
   const handleDelete = async (fileName) => {
-    if (window.confirm(`Are you sure you want to delete the file: ${fileName}?`)) {
+    if (
+      window.confirm(`Are you sure you want to delete the file: ${fileName}?`)
+    ) {
       try {
         await service.deleteFile(fileName);
         // Remove the file from the state to update the UI instantly
-        setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
+        setFiles((prevFiles) =>
+          prevFiles.filter((file) => file.name !== fileName)
+        );
       } catch (error) {
         console.error("Failed to delete file:", error);
         // Optionally, show an error message to the user
@@ -115,15 +121,25 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
       return;
     }
 
-    if (window.confirm(`Are you sure you want to delete ${filesToDelete.length} selected file(s)?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${filesToDelete.length} selected file(s)?`
+      )
+    ) {
       try {
-        await Promise.all(filesToDelete.map((fileName) => service.deleteFile(fileName)));
-        setFiles((prevFiles) => prevFiles.filter((file) => !selectedFiles.has(file.name)));
+        await Promise.all(
+          filesToDelete.map((fileName) => service.deleteFile(fileName))
+        );
+        setFiles((prevFiles) =>
+          prevFiles.filter((file) => !selectedFiles.has(file.name))
+        );
         setSelectedFiles(new Set());
         alert(`${filesToDelete.length} file(s) deleted successfully.`);
       } catch (error) {
         console.error("Failed to delete one or more files:", error);
-        alert(`Error deleting files: ${error.message}. Some files may not have been deleted.`);
+        alert(
+          `Error deleting files: ${error.message}. Some files may not have been deleted.`
+        );
       }
     }
   };
@@ -167,17 +183,29 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
                 ref={selectAllCheckboxRef}
                 type="checkbox"
                 onChange={handleSelectAll}
-                checked={sortedFiles?.length > 0 && selectedFiles.size === sortedFiles.length}
+                checked={
+                  sortedFiles?.length > 0 &&
+                  selectedFiles.size === sortedFiles.length
+                }
               />
             </th>
-            <th onClick={() => requestSort("name")} style={{ cursor: "pointer" }}>
+            <th
+              onClick={() => requestSort("name")}
+              style={{ cursor: "pointer" }}
+            >
               Name{getSortIndicator("name")}
             </th>
             <th>URL</th>
-            <th onClick={() => requestSort("size")} style={{ cursor: "pointer" }}>
+            <th
+              onClick={() => requestSort("size")}
+              style={{ cursor: "pointer" }}
+            >
               Size{getSortIndicator("size")}
             </th>
-            <th onClick={() => requestSort("created")} style={{ cursor: "pointer" }}>
+            <th
+              onClick={() => requestSort("created")}
+              style={{ cursor: "pointer" }}
+            >
               Added{getSortIndicator("created")}
             </th>
             <th>Actions</th>
@@ -188,7 +216,9 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
             sortedFiles.map((file) => (
               <tr
                 key={file.name}
-                style={file.name === newlyAddedFile ? { fontWeight: "bold" } : {}}
+                style={
+                  file.name === newlyAddedFile ? { fontWeight: "bold" } : {}
+                }
               >
                 <td>
                   <input
@@ -199,15 +229,38 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
                 </td>
                 <td>{file.name}</td>
                 <td>
-                  <a href={`${config.fileUrl}/${file.name}`} target="_blank" rel="noopener noreferrer" className="file-url-link">
-                    {`${config.fileUrl}/${file.name}`}
-                  </a>
-                  <button onClick={() => copyToClipboard(`${config.fileUrl}/${file.name}`)} className="copy-button" title="Copy to clipboard">
-                    <img src="copy.png" alt="Copy to clipboard" />
-                  </button>
+                  {(!copiedUrl ||
+                    copiedUrl != `${config.fileUrl}/${file.name}`) && (
+                    <span>
+                      <a
+                        href={`${config.fileUrl}/${file.name}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="file-url-link"
+                      >
+                        {`${config.fileUrl}/${file.name}`}
+                      </a>
+
+                      <button
+                        onClick={() =>
+                          copyToClipboard(`${config.fileUrl}/${file.name}`)
+                        }
+                        className="copy-button"
+                        title="Copy to clipboard"
+                      >
+                        <img src="copy.png" alt="Copy to clipboard" />
+                      </button>
+                    </span>
+                  )}
                   {copiedUrl === `${config.fileUrl}/${file.name}` && (
-                    <span style={{ marginLeft: "5px", color: "green", fontStyle: "italic" }}>
-                      Copied!
+                    <span
+                      style={{
+                        marginLeft: "5px",
+                        color: "green",
+                        fontStyle: "italic",
+                      }}
+                    >
+                      URL copied to clipboard!
                     </span>
                   )}
                 </td>
