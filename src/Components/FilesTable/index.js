@@ -60,6 +60,20 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
     );
   };
 
+  const handleDelete = async (fileName) => {
+    if (window.confirm(`Are you sure you want to delete the file: ${fileName}?`)) {
+      try {
+        await service.deleteFile(fileName);
+        // Remove the file from the state to update the UI instantly
+        setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
+      } catch (error) {
+        console.error("Failed to delete file:", error);
+        // Optionally, show an error message to the user
+        alert(`Error deleting file: ${error.message}`);
+      }
+    }
+  };
+
   const requestSort = (key) => {
     let direction = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -121,6 +135,9 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
                 <td>
                   <button onClick={() => copyToClipboard(`${config.fileUrl}/${file.name}`)}>
                     Copy to clipboard
+                  </button>
+                  <button onClick={() => handleDelete(file.name)} style={{ marginLeft: "5px" }}>
+                    Delete
                   </button>
                 </td>
               </tr>
