@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import service from "../../Services/api";
 import { config } from "../../Config";
+import { toast } from "react-toastify";
 import { useAuth } from "../../Session/AuthContext";
 
 function FilesTable({ refreshTrigger, newlyAddedFile }) {
@@ -16,9 +17,14 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
 
   useEffect(() => {
     const fetchAddressList = async () => {
-      const response = await service.getFiles();
-      console.log(response);
-      setFiles(response || []); // Ensure files is always an array
+      try {
+        const response = await service.getFiles();
+        console.log(response);
+        setFiles(response || []); // Ensure files is always an array
+      } catch (error) {
+        // The error is displayed as a toast by the service.
+        // We just need to catch the rejection to prevent an uncaught promise error.
+      }
     };
 
     // Only fetch files if the user is authenticated.
@@ -77,7 +83,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
       },
       (err) => {
         console.error("Failed to copy text: ", err);
-        alert("Failed to copy URL.");
+        toast.error("Failed to copy URL.");
       }
     );
   };
@@ -94,8 +100,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
         );
       } catch (error) {
         console.error("Failed to delete file:", error);
-        // Optionally, show an error message to the user
-        alert(`Error deleting file: ${error.message}`);
+        // The error is displayed as a toast by the service.
       }
     }
   };
@@ -144,9 +149,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
         alert(`${filesToDelete.length} file(s) deleted successfully.`);
       } catch (error) {
         console.error("Failed to delete one or more files:", error);
-        alert(
-          `Error deleting files: ${error.message}. Some files may not have been deleted.`
-        );
+        // The error is displayed as a toast by the service.
       }
     }
   };

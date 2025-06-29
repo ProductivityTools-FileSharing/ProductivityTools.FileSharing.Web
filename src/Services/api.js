@@ -9,9 +9,22 @@ async function callAuthorizedEndpointWithToast(
   successMessage
 ) {
   return toast.promise(callAuthorizedEndpoint(call), {
-    pending: pendingMessage ? pendingMessage : "Missing pending message",
-    success: successMessage ? successMessage : "Missing sucesss message",
-    error: "something happned!!!!",
+    pending: pendingMessage || "Missing pending message",
+    success: successMessage || "Missing success message",
+    error: {
+      render({ data }) {
+        // data is the error from the rejected promise
+        console.error("Toast error:", data);
+        if (
+          data.response &&
+          data.response.data &&
+          data.response.data.detail
+        ) {
+          return data.response.data.detail;
+        }
+        return data.message || "An unexpected error occurred.";
+      },
+    },
   });
 }
 
@@ -22,25 +35,25 @@ async function callAuthorizedEndpoint(call) {
     const header = {
       headers: { Authorization: `Bearer ${auth.currentUser.accessToken}` },
     };
-    try {
-      const result = await call(header);
-      return result;
-    } catch (error) {
-      console.log(error);
-    }
+
+    const result = await call(header);
+    return result;
   } else {
     console.log("User not authenticated");
   }
 }
 
 async function getFiles() {
+  debugger;
   let call = async (header) => {
+    debugger;
     console.log("env", process.env.NODE_ENV);
     let filesUrl = `${config.serverUrl}/File`;
     console.log("filesurl", filesUrl);
     const response = await axios.get(filesUrl, header);
     return response.data;
   };
+  debugger;
   return callAuthorizedEndpointWithToast(
     call,
     "Getting list of files",
