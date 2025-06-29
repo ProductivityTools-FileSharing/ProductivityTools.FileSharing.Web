@@ -1,21 +1,20 @@
-import { useState } from "react";
-import './App.css';
-import FilesTable from './Components/FilesTable';
-import FileUpload from './Components/FileUpload';
+import "./App.css";
+import Console from './Components/Console'
+import { BrowserRouter, Route, Routes, Link } from "react-router-dom";
+import { AuthProvider } from "./Session/AuthContext";
+import Login from './Session/Login.js'
 
 function App() {
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [newlyAddedFile, setNewlyAddedFile] = useState(null);
-
-  const handleUploadSuccess = (fileName) => {
-    setRefreshTrigger(prev => prev + 1);
-    setNewlyAddedFile(fileName);
-  };
-
   return (
     <div className="App">
-      <FileUpload onUploadSuccess={handleUploadSuccess}></FileUpload>
-      <FilesTable refreshTrigger={refreshTrigger} newlyAddedFile={newlyAddedFile}></FilesTable>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Console />} />
+            <Route path="/Login" element={<Login />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
     </div>
   );
 }
