@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import service from "../../Services/api";
 import { config } from "../../Config";
 
@@ -6,6 +6,8 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
   const [files, setFiles] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: "created", direction: "descending" });
   const [copiedUrl, setCopiedUrl] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState(new Set());
+  const selectAllCheckboxRef = useRef(null);
 
   useEffect(() => {
     const fetchAddressList = async () => {
@@ -17,7 +19,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
     fetchAddressList();
   }, [refreshTrigger]);
 
-  const sortedFiles = useMemo(() => {
+   const sortedFiles = useMemo(() => {
     let sortableItems = [...files];
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
@@ -48,6 +50,15 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
     }
     return sortableItems;
   }, [files, sortConfig]);
+  
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      const isIndeterminate = selectedFiles.size > 0 && selectedFiles.size < sortedFiles.length;
+      selectAllCheckboxRef.current.indeterminate = isIndeterminate;
+    }
+  }, [selectedFiles, sortedFiles.length]);
+
+ 
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(
@@ -72,6 +83,47 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
         console.error("Failed to delete file:", error);
         // Optionally, show an error message to the user
         alert(`Error deleting file: ${error.message}`);
+      }
+    }
+  };
+
+  const handleSelectFile = (fileName) => {
+    setSelectedFiles((prevSelected) => {
+      const newSelected = new Set(prevSelected);
+      if (newSelected.has(fileName)) {
+        newSelected.delete(fileName);
+      } else {
+        newSelected.add(fileName);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const allFileNames = new Set(sortedFiles.map((f) => f.name));
+      setSelectedFiles(allFileNames);
+    } else {
+      setSelectedFiles(new Set());
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const filesToDelete = Array.from(selectedFiles);
+    if (filesToDelete.length === 0) {
+      alert("No files selected for deletion.");
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to delete ${filesToDelete.length} selected file(s)?`)) {
+      try {
+        await Promise.all(filesToDelete.map((fileName) => service.deleteFile(fileName)));
+        setFiles((prevFiles) => prevFiles.filter((file) => !selectedFiles.has(file.name)));
+        setSelectedFiles(new Set());
+        alert(`${filesToDelete.length} file(s) deleted successfully.`);
+      } catch (error) {
+        console.error("Failed to delete one or more files:", error);
+        alert(`Error deleting files: ${error.message}. Some files may not have been deleted.`);
       }
     }
   };
@@ -110,6 +162,14 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
       <table className="blueTable">
         <thead>
           <tr>
+            <th>
+              <input
+                ref={selectAllCheckboxRef}
+                type="checkbox"
+                onChange={handleSelectAll}
+                checked={sortedFiles?.length > 0 && selectedFiles.size === sortedFiles.length}
+              />
+            </th>
             <th onClick={() => requestSort("name")} style={{ cursor: "pointer" }}>
               Name{getSortIndicator("name")}
             </th>
@@ -130,6 +190,13 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
                 key={file.name}
                 style={file.name === newlyAddedFile ? { fontWeight: "bold" } : {}}
               >
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedFiles.has(file.name)}
+                    onChange={() => handleSelectFile(file.name)}
+                  />
+                </td>
                 <td>{file.name}</td>
                 <td>
                   <a href={`${config.fileUrl}/${file.name}`} target="_blank" rel="noopener noreferrer" className="file-url-link">
@@ -140,7 +207,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
                   </button>
                   {copiedUrl === `${config.fileUrl}/${file.name}` && (
                     <span style={{ marginLeft: "5px", color: "green", fontStyle: "italic" }}>
-                      Copied to clipboard!
+                      Copied!
                     </span>
                   )}
                 </td>
@@ -155,6 +222,11 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
             ))}
         </tbody>
       </table>
+      <div style={{ marginTop: "10px" }}>
+        <button onClick={handleBulkDelete} disabled={selectedFiles.size === 0}>
+          Delete Selected ({selectedFiles.size})
+        </button>
+      </div>
     </div>
   );
 }
