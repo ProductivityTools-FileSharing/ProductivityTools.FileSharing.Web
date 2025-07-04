@@ -55,9 +55,15 @@ function FileUpload({ onUploadSuccess }) {
     const formData = new FormData();
     formData.append("formFile", file);
     formData.append("fileName", fileName);
-    const response = await service.uploadFile(formData);
-    console.log("response", response);
-    setUploadResponse(response);
+    try {
+      const response = await service.uploadFile(formData);
+      console.log("response", response);
+      setUploadResponse(response);
+    } catch (error) {
+      // The error is displayed as a toast by the service.
+      // We just need to catch the rejection to prevent an uncaught promise error.
+      setUploadInProgress(false);
+    }
   };
 
   return (

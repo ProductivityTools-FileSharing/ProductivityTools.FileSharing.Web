@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import service from "../../Services/api";
 import { config } from "../../Config";
+import { toast } from "react-toastify";
+import { useAuth } from "../../Session/AuthContext";
 
 function FilesTable({ refreshTrigger, newlyAddedFile }) {
   const [files, setFiles] = useState([]);
@@ -11,16 +13,27 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
   const [copiedUrl, setCopiedUrl] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState(new Set());
   const selectAllCheckboxRef = useRef(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchAddressList = async () => {
-      const response = await service.getFiles();
-      console.log(response);
-      setFiles(response);
+      try {
+        const response = await service.getFiles();
+        console.log(response);
+        setFiles(response || []); // Ensure files is always an array
+      } catch (error) {
+        // The error is displayed as a toast by the service.
+        // We just need to catch the rejection to prevent an uncaught promise error.
+      }
     };
 
-    fetchAddressList();
-  }, [refreshTrigger]);
+    // Only fetch files if the user is authenticated.
+    if (user) {
+      fetchAddressList();
+    } else {
+      setFiles([]); // Clear files if user logs out or is not present
+    }
+  }, [refreshTrigger, user]);
 
   const sortedFiles = useMemo(() => {
     let sortableItems = [...files];
@@ -55,12 +68,12 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
   }, [files, sortConfig]);
 
   useEffect(() => {
-    if (selectAllCheckboxRef.current) {
+    if (selectAllCheckboxRef.current && sortedFiles) {
       const isIndeterminate =
         selectedFiles.size > 0 && selectedFiles.size < sortedFiles.length;
       selectAllCheckboxRef.current.indeterminate = isIndeterminate;
     }
-  }, [selectedFiles, sortedFiles.length]);
+  }, [selectedFiles, sortedFiles]);
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(
@@ -70,7 +83,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
       },
       (err) => {
         console.error("Failed to copy text: ", err);
-        alert("Failed to copy URL.");
+        toast.error("Failed to copy URL.");
       }
     );
   };
@@ -87,8 +100,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
         );
       } catch (error) {
         console.error("Failed to delete file:", error);
-        // Optionally, show an error message to the user
-        alert(`Error deleting file: ${error.message}`);
+        // The error is displayed as a toast by the service.
       }
     }
   };
@@ -137,9 +149,7 @@ function FilesTable({ refreshTrigger, newlyAddedFile }) {
         alert(`${filesToDelete.length} file(s) deleted successfully.`);
       } catch (error) {
         console.error("Failed to delete one or more files:", error);
-        alert(
-          `Error deleting files: ${error.message}. Some files may not have been deleted.`
-        );
+        // The error is displayed as a toast by the service.
       }
     }
   };
