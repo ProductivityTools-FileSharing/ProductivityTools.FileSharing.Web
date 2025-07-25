@@ -6,7 +6,7 @@ const dev = {
 
 
 const prod = {
-    serverUrl : 'https://file.productivitytools.top:8005',
+    serverUrl : 'https://file-api.productivitytools.top',
     fileUrl: 'https://filesharinggs.blob.core.windows.net/filecontainergs'
 }
 export const config = process.env.NODE_ENV === 'development' ? prod : prod;
