@@ -44,16 +44,13 @@ async function callAuthorizedEndpoint(call) {
 }
 
 async function getFiles() {
-  debugger;
   let call = async (header) => {
-    debugger;
     console.log("env", process.env.NODE_ENV);
     let filesUrl = `${config.serverUrl}/File`;
     console.log("filesurl", filesUrl);
     const response = await axios.get(filesUrl, header);
     return response.data;
   };
-  debugger;
   return callAuthorizedEndpointWithToast(
     call,
     "Getting list of files",
